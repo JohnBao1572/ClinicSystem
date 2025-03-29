@@ -1,25 +1,21 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { RemoveDto, UpdatePositionDto, UpdateUserDto } from './dto/update-user.dto';
+import { RemoveDto, UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { CreateInforDto, CreatePostionDto, LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
+import { LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { generatorRandomText } from 'src/util/generatorRandomText';
 import { handleSendMail } from 'src/util/handleSendmail';
 import passport from 'passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Role } from 'src/util/common/user-role';
-import { InforEntity } from './entities/information.entity';
-import { PositionEntity } from './entities/position.entity';
 import { AuthorizeGuard } from 'src/util/guards/authorization.guard';
 import { info } from 'console';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(UserEntity) private readonly userEntity: Repository<UserEntity>,
-    @InjectRepository(InforEntity) private readonly inforEntity: Repository<InforEntity>,
-    @InjectRepository(PositionEntity) private readonly positionEntity: Repository<PositionEntity>,
     private readonly JwtService: JwtService
   ) { }
 
@@ -232,8 +228,8 @@ export class UserService {
     return await this.userEntity.find();
   }
 
-  async findOne(id: number):Promise<UserEntity> {
-     const getOne = await this.userEntity.findOne({
+  async findOne(id: number): Promise<UserEntity> {
+    const getOne = await this.userEntity.findOne({
       where: { id: id }
     })
     if (!getOne) {
@@ -253,77 +249,18 @@ export class UserService {
     return await this.userEntity.save(update);
   }
 
-  async remove(id: number, removeDto: RemoveDto, currentUser:UserEntity) {
+  async remove(id: number, removeDto: RemoveDto, currentUser: UserEntity) {
     const re = await this.userEntity.findOne({
-      where: {id: id}
+      where: { id: id }
     })
-    if(!re){
-      throw new HttpException({message: 'Not found this user to delete'}, HttpStatus.BAD_REQUEST)
+    if (!re) {
+      throw new HttpException({ message: 'Not found this user to delete' }, HttpStatus.BAD_REQUEST)
     }
     re.isDeleted = removeDto.isDeleted
     return await this.userEntity.save(re);
   }
 
-  async createPosition(createPoDto: CreatePostionDto, currentUser:UserEntity):Promise<PositionEntity>{
-    // console.log('createPoDto:', createPoDto); 
-    const cre = new PositionEntity()
-    cre.namePosi = createPoDto.namePosi;
-    cre.description = createPoDto.description;
-    cre.addedBy = currentUser
-    return await this.positionEntity.save(cre)
-  }
 
-  async updatePosition(id:number,updatePoDto: UpdatePositionDto, currentUser:UserEntity):Promise<PositionEntity>{
-    const up = await this.positionEntity.findOne({
-      where: {id: id}
-    })
-    if(!up){
-      throw new HttpException({message: 'Not found this id po to up'}, HttpStatus.BAD_REQUEST)
-    }
-    Object.assign(up, updatePoDto)
-    up.addedBy = currentUser
-    return await this.positionEntity.save(up)
-  }
-
-  async getOnePo(id:number):Promise<PositionEntity>{
-    const findONe = await this.positionEntity.findOne({
-      where: {id:id},
-      relations: {addedBy: true}
-    })
-    if(!findONe){
-      throw new HttpException({message: 'find one to upd'}, HttpStatus.BAD_REQUEST)
-    }
-    return findONe
-  }
-
-  async findAllPo():Promise<PositionEntity[]>{
-    return await this.positionEntity.find()
-  }
-
-  async createInfor(createInforDto: CreateInforDto, currentUser:UserEntity):Promise<InforEntity>{
-    console.log('createInforDto:', createInforDto);
-    if (!createInforDto || !createInforDto.positionId) {
-      throw new HttpException({ message: 'positionId is required' }, HttpStatus.BAD_REQUEST);
-    }
-    const posi = await this.positionEntity.findOne({
-      where: {id: createInforDto.positionId}
-    })
-    if(!posi){
-      throw new HttpException({message: 'Not found posi'}, HttpStatus.BAD_REQUEST)
-    }
-
-    const infor = new InforEntity()
-    infor.fullName = createInforDto.fullName
-    infor.gender = createInforDto.gender
-    infor.phoneNumber = createInforDto.phoneNumber
-    infor.email = createInforDto.email;
-    infor.address = createInforDto.address
-    infor.salary = createInforDto.salary
-    infor.position = posi
-    infor.addedBy = currentUser
-    console.log('Saving new infor:', infor); 
-    return await this.inforEntity.save(infor)
-  }
 }
 
 
