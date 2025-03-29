@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { RemoveDto, UpdatePositionDto, UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
+import { CreatePostionDto, LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { generatorRandomText } from 'src/util/generatorRandomText';
 import { handleSendMail } from 'src/util/handleSendmail';
 import passport from 'passport';
@@ -187,12 +187,12 @@ export class UserService {
     }
   }
 
-  async createAccEmploy(signUpEmployDto:SignUpEmployDto):Promise<UserEntity>{
+  async createAccEmploy(signUpEmployDto: SignUpEmployDto): Promise<UserEntity> {
     const employ = await this.userEntity.findOne({
-      where: {email: signUpEmployDto.email}
+      where: { email: signUpEmployDto.email }
     })
-    if(employ){
-      throw new HttpException({message:'Email had already'}, HttpStatus.BAD_REQUEST)
+    if (employ) {
+      throw new HttpException({ message: 'Email had already' }, HttpStatus.BAD_REQUEST)
     }
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(signUpEmployDto.password, salt);
@@ -227,26 +227,81 @@ export class UserService {
     return token;
   }
 
-  async findAll():Promise<UserEntity[]> {
+  async findAll(): Promise<UserEntity[]> {
     return await this.userEntity.find();
   }
 
-  async findOne(id: number) {
-    const getOne = await this.userEntity.findOne({
-      where: {id: id}
+  async findOne(id: number):Promise<UserEntity> {
+     const getOne = await this.userEntity.findOne({
+      where: { id: id }
     })
-    if(!getOne){
-      throw new HttpException({message: 'Not found this user'}, HttpStatus.BAD_REQUEST)
+    if (!getOne) {
+      throw new HttpException({ message: 'Not found this user' }, HttpStatus.BAD_REQUEST)
     }
     return getOne;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+    const update = await this.userEntity.findOne({
+      where: { id: id }
+    })
+    if (!update) {
+      throw new HttpException({ message: 'Not found this user to update' }, HttpStatus.BAD_REQUEST)
+    }
+    Object.assign(update, updateUserDto)
+    return await this.userEntity.save(update);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number, removeDto: RemoveDto, currentUser:UserEntity) {
+    const re = await this.userEntity.findOne({
+      where: {id: id}
+    })
+    if(!re){
+      throw new HttpException({message: 'Not found this user to delete'}, HttpStatus.BAD_REQUEST)
+    }
+    re.isDeleted = removeDto.isDeleted
+    return await this.userEntity.save(re);
+  }
+
+  async createPosition(createPoDto: CreatePostionDto):Promise<PositionEntity>{
+    // console.log('createPoDto:', createPoDto); 
+    const user = await this.userEntity.findOne({
+      where: { id: createPoDto.addedById }
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const cre = new PositionEntity()
+    cre.namePosi = createPoDto.namePosi;
+    cre.description = createPoDto.description;
+    cre.addedBy = user
+    return await this.positionEntity.save(cre)
+  }
+
+  async updatePosition(id:number,updatePoDto: UpdatePositionDto, currentUser:UserEntity):Promise<PositionEntity>{
+    const up = await this.positionEntity.findOne({
+      where: {id: id}
+    })
+    if(!up){
+      throw new HttpException({message: 'Not found this id po to up'}, HttpStatus.BAD_REQUEST)
+    }
+    Object.assign(up, updatePoDto)
+    up.addedBy = currentUser
+    return await this.positionEntity.save(up)
+  }
+
+  async getOnePo(id:number):Promise<PositionEntity>{
+    const findONe = await this.positionEntity.findOne({
+      where: {id:id}
+    })
+    if(!findONe){
+      throw new HttpException({message: 'find one to upd'}, HttpStatus.BAD_REQUEST)
+    }
+    return findONe
+  }
+
+  async findAllPo():Promise<PositionEntity[]>{
+    return await this.positionEntity.find()
   }
 }
 

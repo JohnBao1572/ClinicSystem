@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Min, MinLength } from "class-validator";
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, Min, MinLength } from "class-validator";
 import { Role } from "src/util/common/user-role";
 
 
@@ -61,6 +61,19 @@ export class SignUpEmployDto {
     password: string;
 
     @IsNotEmpty({ message: 'Create for employ not emp' })
-    @IsEnum(Role,{ message: 'role required' })
+    @IsEnum(Role, { message: 'role required' })
     role: Role;
+}
+
+export class CreatePostionDto {
+    @IsNotEmpty({message: 'Not empm'})
+    @IsString({message: 'name must be string'})
+    namePosi: string;
+
+    @IsString({message: 'desc string'})
+    description: string;
+
+    @IsNotEmpty({message: 'id not emp'})
+    @IsNumber({}, {message: 'number'})
+    addedById: number;
 }

@@ -1,52 +1,54 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { RemoveDto, UpdatePositionDto, UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
-import { LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
+import { CreatePostionDto, LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { waitForDebugger } from 'inspector';
 import { AuthorizeRoles } from 'src/util/decorators/authorize-roles.decorator';
 import { Role } from 'src/util/common/user-role';
 import { AuthenticationGuard } from 'src/util/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/util/guards/authorization.guard';
+import { CurrentUser } from 'src/util/decorators/current-user.decorator';
+import { PositionEntity } from './entities/position.entity';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post('signup')
-  async create(@Body() signupDto: SignUpDto):Promise<UserEntity> {
+  async create(@Body() signupDto: SignUpDto): Promise<UserEntity> {
     return await this.userService.create(signupDto);
   }
 
   @Put('verify/:id')
-  async verifyAccount(@Param('id') id:string, @Body() verifyCodeDto: VerifyCodeDto):Promise<any>{
-    return await this.userService.verifyAccount(+id,verifyCodeDto);
+  async verifyAccount(@Param('id') id: string, @Body() verifyCodeDto: VerifyCodeDto): Promise<any> {
+    return await this.userService.verifyAccount(+id, verifyCodeDto);
   }
 
   @Post('resend/:id')
-  async resendCode(@Param('id') id:string, @Body() resendCodeDto: ResendCodeDto):Promise<any>{
-    return await this.userService.resendCode(+id,resendCodeDto);
+  async resendCode(@Param('id') id: string, @Body() resendCodeDto: ResendCodeDto): Promise<any> {
+    return await this.userService.resendCode(+id, resendCodeDto);
   }
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto){
+  async login(@Body() loginDto: LoginDto) {
     return await this.userService.login(loginDto);
   }
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req){
+  async googleAuth(@Req() req) {
   }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req){
+  async googleAuthRedirect(@Req() req) {
     return this.userService.loginGoogle(req)
   }
 
   @Post('signRole')
-  async createAccEmploy(@Body() signUpEmployDto:SignUpEmployDto):Promise<UserEntity>{
+  async createAccEmploy(@Body() signUpEmployDto: SignUpEmployDto): Promise<UserEntity> {
     return await this.userService.createAccEmploy(signUpEmployDto)
   }
 
@@ -58,17 +60,47 @@ export class UserController {
   }
 
   @Get('getOne/:id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<UserEntity> {
     return this.userService.findOne(+id);
   }
 
-  @Patch('up/:id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @Patch('upUser/:id')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthorizeGuard, AuthenticationGuard)
   @Delete('re/:id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  async remove(@Param('id') id: string, @Body() removeDto: RemoveDto, @CurrentUser() currentUser: UserEntity) {
+    return await this.userService.remove(+id, removeDto, currentUser);
+  }
+
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthorizeGuard, AuthenticationGuard)
+  @Post('crePo')
+  async createPosition(@Body() createPoDto: CreatePostionDto): Promise<PositionEntity> {
+    return await this.userService.createPosition(createPoDto)
+  }
+
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthorizeGuard, AuthenticationGuard)
+  @Put('upPo/:id')
+  async updatePosition(@Param('id') id: string,@Body() updatePoDto: UpdatePositionDto, @CurrentUser() currentUser:UserEntity):Promise<PositionEntity> {
+    return await this.userService.updatePosition(+id, updatePoDto, currentUser)
+  }
+
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthorizeGuard, AuthenticationGuard)
+  @Get('getOnePo/:id')
+  async getOnePo(@Param('id') id: string):Promise<PositionEntity>{
+    return await this.userService.getOnePo(+id)
+  }
+
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthorizeGuard, AuthenticationGuard)
+  @Get('getAllPo')
+  async findAllPo():Promise<PositionEntity[]>{
+    return await this.userService.findAllPo()
   }
 }
