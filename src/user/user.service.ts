@@ -4,25 +4,30 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { LoginDto, ResendCodeDto, SignUpDto, VerifyCodeDto } from './dto/create-user.dto';
+import { LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { generatorRandomText } from 'src/util/generatorRandomText';
 import { handleSendMail } from 'src/util/handleSendmail';
 import passport from 'passport';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Role } from 'src/util/common/user-role';
+import { InforEntity } from './entities/information.entity';
+import { PositionEntity } from './entities/position.entity';
+import { AuthorizeGuard } from 'src/util/guards/authorization.guard';
 
 @Injectable()
 export class UserService {
   constructor(@InjectRepository(UserEntity) private readonly userEntity: Repository<UserEntity>,
-  private readonly JwtService: JwtService
-){}
+    @InjectRepository(InforEntity) private readonly inforEntity: Repository<InforEntity>,
+    @InjectRepository(PositionEntity) private readonly positionEntity: Repository<PositionEntity>,
+    private readonly JwtService: JwtService
+  ) { }
 
-  async create(signupDto: SignUpDto):Promise<UserEntity> {
+  async create(signupDto: SignUpDto): Promise<UserEntity> {
     const user = await this.userEntity.findOne({
-      where: {email: signupDto.email}
+      where: { email: signupDto.email }
     })
-    if(user){
-      throw new HttpException({message: 'User has already exist'}, HttpStatus.BAD_REQUEST)
+    if (user) {
+      throw new HttpException({ message: 'User has already exist' }, HttpStatus.BAD_REQUEST)
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -54,21 +59,21 @@ export class UserService {
     return saveUser;
   }
 
-  async verifyAccount(id:number ,verifyCodeDto: VerifyCodeDto):Promise<any>{
+  async verifyAccount(id: number, verifyCodeDto: VerifyCodeDto): Promise<any> {
     const user = await this.userEntity.findOne({
-      where: {verifyCode: verifyCodeDto.verifyCode}
+      where: { verifyCode: verifyCodeDto.verifyCode }
     })
-    if(!user){
-      throw new HttpException({message: 'Verify code invalid'}, HttpStatus.BAD_REQUEST)
+    if (!user) {
+      throw new HttpException({ message: 'Verify code invalid' }, HttpStatus.BAD_REQUEST)
     }
-    if(user.verifyCode !== verifyCodeDto.verifyCode){
-      throw new HttpException({message: 'Verify code invalid'}, HttpStatus.BAD_REQUEST)
+    if (user.verifyCode !== verifyCodeDto.verifyCode) {
+      throw new HttpException({ message: 'Verify code invalid' }, HttpStatus.BAD_REQUEST)
     }
-    if(user.verificationCodeExpiry && user.verificationCodeExpiry < new Date()){
-      throw new HttpException({message: 'Verify code expired'}, HttpStatus.BAD_REQUEST)
+    if (user.verificationCodeExpiry && user.verificationCodeExpiry < new Date()) {
+      throw new HttpException({ message: 'Verify code expired' }, HttpStatus.BAD_REQUEST)
     }
 
-    await this.userEntity.update(user.id,{
+    await this.userEntity.update(user.id, {
       isVerify: true,
       isDeleted: false,
       verifyCode: '',
@@ -76,18 +81,18 @@ export class UserService {
     })
 
     const updated = await this.userEntity.findOne({
-      where: {id: user.id}
+      where: { id: user.id }
     })
 
     return updated
   }
 
-  async resendCode(id: number, resendCodeDto: ResendCodeDto){
+  async resendCode(id: number, resendCodeDto: ResendCodeDto) {
     const user = await this.userEntity.findOne({
-      where: {email: resendCodeDto.email}
+      where: { email: resendCodeDto.email }
     })
-    if(!user){
-      throw new HttpException({message: 'User not found'}, HttpStatus.NOT_FOUND)
+    if (!user) {
+      throw new HttpException({ message: 'User not found' }, HttpStatus.NOT_FOUND)
     }
 
     const verificationCode = generatorRandomText(6).trim()
@@ -108,22 +113,22 @@ export class UserService {
       html: `<h2>Verify code: ${verificationCode}</h2>`
     })
     console.log(verificationCode)
-    return {message: 'Resend code success'}
+    return { message: 'Resend code success' }
   }
 
-  async login(loginDto: LoginDto){
+  async login(loginDto: LoginDto) {
     const user = await this.userEntity.findOne({
-      where:{
+      where: {
         email: loginDto.email
       }
     })
-    if(!user){
-      throw new HttpException({message: 'User not found'}, HttpStatus.NOT_FOUND)
+    if (!user) {
+      throw new HttpException({ message: 'User not found' }, HttpStatus.NOT_FOUND)
     }
 
     const isMathPassword = await bcrypt.compare(loginDto.password, user.password)
-    if(!isMathPassword){
-      throw new HttpException({message: 'Password invalid'}, HttpStatus.BAD_REQUEST)
+    if (!isMathPassword) {
+      throw new HttpException({ message: 'Password invalid' }, HttpStatus.BAD_REQUEST)
     }
 
     const accToken = await this.accToken(user)
@@ -136,23 +141,23 @@ export class UserService {
     }
   }
 
-  async loginGoogle(req: Request){
-    const userGoogle = (req as any).user as{
+  async loginGoogle(req: Request) {
+    const userGoogle = (req as any).user as {
       email: string,
       firstName: string,
       lastName: string,
       picture: string,
       accessToken: string,
     }
-    if(!userGoogle){
-      throw new HttpException({message: 'User not found'}, HttpStatus.NOT_FOUND)
+    if (!userGoogle) {
+      throw new HttpException({ message: 'User not found' }, HttpStatus.NOT_FOUND)
     }
 
-    const {email, firstName, lastName, picture, accessToken} = userGoogle;
+    const { email, firstName, lastName, picture, accessToken } = userGoogle;
     let user = await this.userEntity.findOne({
-      where: {email}
+      where: { email }
     })
-    if(!user){
+    if (!user) {
       user = await this.userEntity.create({
         email,
         firstName,
@@ -172,7 +177,7 @@ export class UserService {
 
     return {
       message: 'Login google success',
-      user:{
+      user: {
         id: user.id,
         email: user.email,
         firstName: user.firstName,
@@ -182,8 +187,28 @@ export class UserService {
     }
   }
 
-  async accToken(user:UserEntity):Promise<string>{
-    const payload = {id: user.id, firstName: user.firstName, lastName:user.lastName, password: user.password}
+  async createAccEmploy(signUpEmployDto:SignUpEmployDto):Promise<UserEntity>{
+    const employ = await this.userEntity.findOne({
+      where: {email: signUpEmployDto.email}
+    })
+    if(employ){
+      throw new HttpException({message:'Email had already'}, HttpStatus.BAD_REQUEST)
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(signUpEmployDto.password, salt);
+    const saveEmploy = await this.userEntity.create({
+      ...signUpEmployDto,
+      password: hashPassword,
+      isVerify: true,
+      isDeleted: false,
+      verifyCode: '',
+      verificationCodeExpiry: undefined,
+    })
+    return await this.userEntity.save(saveEmploy)
+  }
+
+  async accToken(user: UserEntity): Promise<string> {
+    const payload = { id: user.id, firstName: user.firstName, lastName: user.lastName, password: user.password }
     const token = await this.JwtService.sign(payload, {
       secret: process.env.Acc_Token,
       expiresIn: '3h'
@@ -192,9 +217,9 @@ export class UserService {
     return token
   }
 
-  async refToken(user:UserEntity):Promise<string>{
-    const payload = {id:user.id, firstName: user.firstName, lastName:user.lastName, password: user.password}
-    const token = await this.JwtService.sign(payload,{
+  async refToken(user: UserEntity): Promise<string> {
+    const payload = { id: user.id, firstName: user.firstName, lastName: user.lastName, password: user.password }
+    const token = await this.JwtService.sign(payload, {
       secret: process.env.Ref_Token,
       expiresIn: '7d'
     })
@@ -202,12 +227,18 @@ export class UserService {
     return token;
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll():Promise<UserEntity[]> {
+    return await this.userEntity.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    const getOne = await this.userEntity.findOne({
+      where: {id: id}
+    })
+    if(!getOne){
+      throw new HttpException({message: 'Not found this user'}, HttpStatus.BAD_REQUEST)
+    }
+    return getOne;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
