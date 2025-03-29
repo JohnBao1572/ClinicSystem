@@ -1,4 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsString, Min, MinLength } from "class-validator";
+import { Gender } from "src/util/common/gender";
 import { Role } from "src/util/common/user-role";
 
 
@@ -66,14 +67,44 @@ export class SignUpEmployDto {
 }
 
 export class CreatePostionDto {
-    @IsNotEmpty({message: 'Not empm'})
-    @IsString({message: 'name must be string'})
+    @IsNotEmpty({ message: 'Not empm' })
+    @IsString({ message: 'name must be string' })
     namePosi: string;
 
-    @IsString({message: 'desc string'})
+    @IsString({ message: 'desc string' })
     description: string;
+}
 
-    @IsNotEmpty({message: 'id not emp'})
-    @IsNumber({}, {message: 'number'})
+export class CreateInforDto {
+    @IsNotEmpty({message: 'name not emp'})
+    @IsString({message: 'name should be string'})
+    fullName: string;
+
+    @IsNotEmpty({message: 'gen not emp'})
+    @IsEnum(Gender, {message: 'gen should be enum'})
+    gender: Gender;
+
+    @IsNotEmpty({message: 'phone not emp'})
+    @IsString({message: 'phone should be string'})
+    phoneNumber: string;
+
+    @IsNotEmpty({message: 'email not emp'})
+    @IsString({message: 'email string'})
+    email: string;
+
+    @IsNotEmpty({message: 'Add not emp'})
+    @IsString({message: 'add string'})
+    address: string;
+
+    @IsNotEmpty({message: 'salary not emp'})
+    @IsNumber({}, {message: 'salary number'})
+    salary: number;
+
+    @IsNotEmpty({message: 'salary not emp'})
+    @IsNumber({}, {message: 'salary number'})
+    positionId: number;
+
+    @IsNotEmpty({message: 'salary not emp'})
+    @IsNumber({}, {message: 'salary number'})
     addedById: number;
 }

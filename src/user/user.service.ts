@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { CreatePostionDto, LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
+import { CreateInforDto, CreatePostionDto, LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { generatorRandomText } from 'src/util/generatorRandomText';
 import { handleSendMail } from 'src/util/handleSendmail';
 import passport from 'passport';
@@ -13,6 +13,7 @@ import { Role } from 'src/util/common/user-role';
 import { InforEntity } from './entities/information.entity';
 import { PositionEntity } from './entities/position.entity';
 import { AuthorizeGuard } from 'src/util/guards/authorization.guard';
+import { info } from 'console';
 
 @Injectable()
 export class UserService {
@@ -263,18 +264,12 @@ export class UserService {
     return await this.userEntity.save(re);
   }
 
-  async createPosition(createPoDto: CreatePostionDto):Promise<PositionEntity>{
+  async createPosition(createPoDto: CreatePostionDto, currentUser:UserEntity):Promise<PositionEntity>{
     // console.log('createPoDto:', createPoDto); 
-    const user = await this.userEntity.findOne({
-      where: { id: createPoDto.addedById }
-    });
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
     const cre = new PositionEntity()
     cre.namePosi = createPoDto.namePosi;
     cre.description = createPoDto.description;
-    cre.addedBy = user
+    cre.addedBy = currentUser
     return await this.positionEntity.save(cre)
   }
 
@@ -292,7 +287,8 @@ export class UserService {
 
   async getOnePo(id:number):Promise<PositionEntity>{
     const findONe = await this.positionEntity.findOne({
-      where: {id:id}
+      where: {id:id},
+      relations: {addedBy: true}
     })
     if(!findONe){
       throw new HttpException({message: 'find one to upd'}, HttpStatus.BAD_REQUEST)
@@ -302,6 +298,31 @@ export class UserService {
 
   async findAllPo():Promise<PositionEntity[]>{
     return await this.positionEntity.find()
+  }
+
+  async createInfor(createInforDto: CreateInforDto, currentUser:UserEntity):Promise<InforEntity>{
+    console.log('createInforDto:', createInforDto);
+    if (!createInforDto || !createInforDto.positionId) {
+      throw new HttpException({ message: 'positionId is required' }, HttpStatus.BAD_REQUEST);
+    }
+    const posi = await this.positionEntity.findOne({
+      where: {id: createInforDto.positionId}
+    })
+    if(!posi){
+      throw new HttpException({message: 'Not found posi'}, HttpStatus.BAD_REQUEST)
+    }
+
+    const infor = new InforEntity()
+    infor.fullName = createInforDto.fullName
+    infor.gender = createInforDto.gender
+    infor.phoneNumber = createInforDto.phoneNumber
+    infor.email = createInforDto.email;
+    infor.address = createInforDto.address
+    infor.salary = createInforDto.salary
+    infor.position = posi
+    infor.addedBy = currentUser
+    console.log('Saving new infor:', infor); 
+    return await this.inforEntity.save(infor)
   }
 }
 

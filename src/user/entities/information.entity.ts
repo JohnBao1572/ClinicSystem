@@ -4,7 +4,6 @@ import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Ti
 import { UserEntity } from "./user.entity";
 import { PositionEntity } from "./position.entity";
 
-
 @Entity('infors')
 export class InforEntity{
     @PrimaryGeneratedColumn()
