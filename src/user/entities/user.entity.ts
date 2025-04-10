@@ -1,4 +1,5 @@
 import { InformationEntity } from "src/informations/entities/information.entity";
+import { MedicineEntity } from "src/medicines/entities/medicine.entity";
 import { PositionEntity } from "src/positions/entities/position.entity";
 import { SupplierEntity } from "src/suppliers/entities/supplier.entity";
 import { Role } from "src/util/common/user-role";
@@ -50,4 +51,7 @@ export class UserEntity {
 
     @OneToMany(() => SupplierEntity,(suppliers)=> suppliers.addedBy)
     suppliers: SupplierEntity[]
+
+    @OneToMany(() => MedicineEntity, (medicines)=> medicines.addedBy)
+    medicines: MedicineEntity[]
 }
