@@ -1,3 +1,5 @@
+import { InformationEntity } from "src/informations/entities/information.entity";
+import { PositionEntity } from "src/positions/entities/position.entity";
 import { Role } from "src/util/common/user-role";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
@@ -38,4 +40,10 @@ export class UserEntity {
 
     @UpdateDateColumn()
     updatedAt: Timestamp;
+
+    @OneToMany(()=> PositionEntity, (posi)=> posi.addedBy)
+    posi: PositionEntity[]
+
+    @OneToMany(() => InformationEntity,(information)=> information.addedBy)
+    information: InformationEntity[]
 }
