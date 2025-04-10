@@ -7,10 +7,12 @@ import { UserModule } from './user/user.module';
 import { CurrentUserMiddleware } from './util/middleware/current-user.middleware';
 import { PositionsModule } from './positions/positions.module';
 import { InformationsModule } from './informations/informations.module';
+import { MedicinesModule } from './medicines/medicines.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
 
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule],
+  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule, MedicinesModule, SuppliersModule],
   controllers: [AppController],
   providers: [AppService],
 })

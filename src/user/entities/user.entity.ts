@@ -1,5 +1,6 @@
 import { InformationEntity } from "src/informations/entities/information.entity";
 import { PositionEntity } from "src/positions/entities/position.entity";
+import { SupplierEntity } from "src/suppliers/entities/supplier.entity";
 import { Role } from "src/util/common/user-role";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
@@ -46,4 +47,7 @@ export class UserEntity {
 
     @OneToMany(() => InformationEntity,(information)=> information.addedBy)
     information: InformationEntity[]
+
+    @OneToMany(() => SupplierEntity,(suppliers)=> suppliers.addedBy)
+    suppliers: SupplierEntity[]
 }
