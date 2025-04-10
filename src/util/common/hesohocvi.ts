@@ -1,6 +1,6 @@
 export enum heSoHocVi{
     CD = "Cao_dang",
-    CN = "Cử_Nhân",
-    TH = "Thạc_sỹ",
-    TS = "Tiến_Sỹ",
+    CN = "Cu_nhan",
+    TH = "Thac_sy",
+    TS = "Tien_sy",
 }

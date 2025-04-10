@@ -8,11 +8,11 @@ export class CreateInformationDto {
     name: string;
 
     @IsNotEmpty({message: 'Degree is required'})
-    @IsEnum({message: 'degree must be a enum'})
+    @IsEnum(heSoHocVi, {message: 'degree must be a enum'})
     degree_coefficient: heSoHocVi;
 
     @IsNotEmpty({message: 'gen is required'})
-    @IsEnum({message: 'gen must be a enum'})
+    @IsEnum(Gender, {message: 'gen must be a enum'})
     gender: Gender;
 
     @IsNotEmpty({message: 'salary not emp'})
