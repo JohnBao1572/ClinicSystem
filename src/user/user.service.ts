@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { RemoveDto, UpdateUserDto } from './dto/update-user.dto';
+import { RemoveDto, UpdateEmployDto, UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -238,14 +238,14 @@ export class UserService {
     return getOne;
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+  async update(id: number, updateEmployDto: UpdateEmployDto): Promise<UserEntity> {
     const update = await this.userEntity.findOne({
       where: { id: id }
     })
     if (!update) {
       throw new HttpException({ message: 'Not found this user to update' }, HttpStatus.BAD_REQUEST)
     }
-    Object.assign(update, updateUserDto)
+    Object.assign(update, updateEmployDto)
     return await this.userEntity.save(update);
   }
 

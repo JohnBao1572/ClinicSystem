@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UseGuards, Req } from '@nestjs/common';
 import { UserService } from './user.service';
-import { RemoveDto, UpdateUserDto } from './dto/update-user.dto';
+import { RemoveDto, UpdateEmployDto, UpdateUserDto } from './dto/update-user.dto';
 import { UserEntity } from './entities/user.entity';
 import { LoginDto, ResendCodeDto, SignUpDto, SignUpEmployDto, VerifyCodeDto } from './dto/create-user.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -44,5 +44,10 @@ export class UserController {
   @Post('signRole')
   async createAccEmploy(@Body() signUpEmployDto: SignUpEmployDto): Promise<UserEntity> {
     return await this.userService.createAccEmploy(signUpEmployDto)
+  }
+
+  @Put('up/:id')
+  async update(@Param('id') id: string, @Body() updateEmployDto: UpdateEmployDto){
+    return await this.userService.update(+id, updateEmployDto)
   }
 }

@@ -1,3 +1,4 @@
+import { ExaminationScheduleEntity } from "src/examination_schedule/entities/examination_schedule.entity";
 import { InformationEntity } from "src/informations/entities/information.entity";
 import { MedicineEntity } from "src/medicines/entities/medicine.entity";
 import { PositionEntity } from "src/positions/entities/position.entity";
@@ -54,4 +55,7 @@ export class UserEntity {
 
     @OneToMany(() => MedicineEntity, (medicines)=> medicines.addedBy)
     medicines: MedicineEntity[]
+
+    @OneToMany(() => ExaminationScheduleEntity,(schedules) => schedules.addedBy)
+    schedules: ExaminationScheduleEntity[]
 }

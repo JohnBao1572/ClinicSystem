@@ -9,10 +9,11 @@ import { PositionsModule } from './positions/positions.module';
 import { InformationsModule } from './informations/informations.module';
 import { MedicinesModule } from './medicines/medicines.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
+import { ExaminationScheduleModule } from './examination_schedule/examination_schedule.module';
 
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule, MedicinesModule, SuppliersModule],
+  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule, MedicinesModule, SuppliersModule, ExaminationScheduleModule],
   controllers: [AppController],
   providers: [AppService],
 })
