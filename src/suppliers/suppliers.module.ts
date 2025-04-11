@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service';
 import { SuppliersController } from './suppliers.controller';
-import { Type } from 'class-transformer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SupplierEntity } from './entities/supplier.entity';
+import { MedicinesModule } from 'src/medicines/medicines.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([SupplierEntity])],
@@ -11,4 +11,4 @@ import { SupplierEntity } from './entities/supplier.entity';
   providers: [SuppliersService],
   exports: [SuppliersService],
 })
-export class SuppliersModule {}
+export class SuppliersModule { }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 
 export class CreateMedicineDto {
@@ -10,7 +10,18 @@ export class CreateMedicineDto {
     @IsString({message: 'desc must string'})
     description: string;
 
+    @IsNotEmpty({message: 'qty not emp'})
+    @IsNumber({}, {message: 'qty must a num'})
+    quantity: number;
+
     @IsNotEmpty({message: 'supId not emp'})
     @IsNumber({}, {message: 'supId must a number'})
     supId: number;
+}
+
+
+export class RemoveMedDto{
+    @IsNotEmpty({message: 'isDeleted not emp'})
+    @IsBoolean({message: 'isDeleted must a boolean'})
+    isDeleted: boolean;
 }

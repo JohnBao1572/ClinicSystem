@@ -6,10 +6,12 @@ import { SupplierEntity } from './entities/supplier.entity';
 import { Repository } from 'typeorm';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { get } from 'http';
+import { MedicinesService } from 'src/medicines/medicines.service';
 
 @Injectable()
 export class SuppliersService {
-  constructor(@InjectRepository(SupplierEntity) private readonly supplierEntity: Repository<SupplierEntity>) { }
+  constructor(@InjectRepository(SupplierEntity) private readonly supplierEntity: Repository<SupplierEntity>
+) { }
 
   async create(createSupplierDto: CreateSupplierDto, currentUser: UserEntity): Promise<SupplierEntity> {
     const newSup = await this.supplierEntity.create(createSupplierDto);
@@ -73,7 +75,8 @@ export class SuppliersService {
     return await this.supplierEntity.save(up);
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const removeMed = await this
     return `This action removes a #${id} supplier`;
   }
 }

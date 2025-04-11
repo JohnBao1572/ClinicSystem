@@ -13,6 +13,9 @@ export class MedicineEntity {
     @Column({type: 'varchar', length: 255})
     description: string;
 
+    @Column({type: 'int', default: 0})
+    quantity: number;
+
     @Column({type: 'boolean', default: false})
     isDeleted: boolean;
 
