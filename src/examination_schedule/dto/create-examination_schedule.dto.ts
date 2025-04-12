@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsDate, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { IsBoolean, IsDate, IsEnum, IsNotEmpty, IsString, MinLength } from "class-validator";
 
 
 export class CreateExaminationScheduleDto {
@@ -9,7 +9,7 @@ export class CreateExaminationScheduleDto {
 
     @IsNotEmpty({ message: 'numberP not emp' })
     @IsString({ message: 'numberP must be string' })
-    @MinLength(10, {message: 'numberP at least 10 characters'})
+    @MinLength(10, { message: 'numberP at least 10 characters' })
     numberPhone: string;
 
     @IsNotEmpty({ message: 'reason not emp' })
@@ -17,7 +17,13 @@ export class CreateExaminationScheduleDto {
     reasonForVisit: string;
 
     @IsNotEmpty({ message: 'appointment not emp' })
-    @IsDate({message: 'appointment must be date'})
+    @IsDate({ message: 'appointment must be date' })
     @Type(() => Date)
     AppointmentDate: Date;
+}
+
+export class RemoveScheduleDto {
+    @IsNotEmpty({message: 'isCanceled not emp'})
+    @IsBoolean({message: 'cancel is boolean'})
+    isCanceled: boolean;
 }

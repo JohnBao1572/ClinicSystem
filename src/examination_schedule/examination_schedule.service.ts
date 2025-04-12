@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateExaminationScheduleDto } from './dto/create-examination_schedule.dto';
+import { CreateExaminationScheduleDto, RemoveScheduleDto } from './dto/create-examination_schedule.dto';
 import { UpdateExaminationScheduleDto } from './dto/update-examination_schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ExaminationScheduleEntity } from './entities/examination_schedule.entity';
@@ -63,13 +63,11 @@ export class ExaminationScheduleService {
 
   async findAll(currentUser: UserEntity): Promise<ExaminationScheduleEntity[]> {
     const getAll = await this.scheduleEntity.find({
+      where: currentUser.role === Role.NURSE ? {} : {addedBy: {id: currentUser.id}},
       relations: { addedBy: true },
     })
     if (!getAll || getAll.length === 0) {
       throw new HttpException({ message: 'No exam schedules found' }, HttpStatus.NOT_FOUND)
-    }
-    if (currentUser.role !== Role.NURSE) {
-      throw new HttpException({ message: 'You do not have permission to watch all schedules' }, HttpStatus.BAD_REQUEST)
     }
     const schedulesToUpdateStatus: ExaminationScheduleEntity[] = [];
     for (const schedule of getAll) {
@@ -89,15 +87,46 @@ export class ExaminationScheduleService {
     return getAll;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} examinationSchedule`;
+  async findOne(id: number, currentUser:UserEntity):Promise<ExaminationScheduleEntity> {
+    const getOne = await this.scheduleEntity.findOne({
+      where: {id: id},
+      relations: {addedBy: true}
+    })
+    if(!getOne){
+      throw new HttpException({message: 'NOt found this id to watch detail'}, HttpStatus.NOT_FOUND)
+    }
+    if(currentUser.role !== Role.NURSE && getOne.addedBy.id !== currentUser.id){
+      throw new HttpException({message: 'You no have permission'}, HttpStatus.BAD_REQUEST)
+    }
+    return getOne;
   }
 
-  update(id: number, updateExaminationScheduleDto: UpdateExaminationScheduleDto) {
-    return `This action updates a #${id} examinationSchedule`;
+  async update(id: number, updateExaminationScheduleDto: UpdateExaminationScheduleDto, currentUser:UserEntity):Promise<ExaminationScheduleEntity> {
+    const findToUp = await this.scheduleEntity.findOne({
+      where:{id:id},
+    })
+    if(!findToUp){
+      throw new HttpException({message: 'NOt foudn to update'}, HttpStatus.NOT_FOUND)
+    }
+    if(currentUser.role !== Role.NURSE){
+      throw new HttpException({message: 'You not have permission'}, HttpStatus.UNAUTHORIZED)
+    }
+    Object.assign(findToUp, updateExaminationScheduleDto)
+    return await this.scheduleEntity.save(findToUp);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} examinationSchedule`;
+  async remove(id: number, currentUser:UserEntity, removeScheduleDto: RemoveScheduleDto) {
+    const re = await this.scheduleEntity.findOne({
+      where: {id:id},
+      relations:{addedBy: true}
+    })
+    if(!re){
+      throw new HttpException({message: 'Not found this id schedule to remove'}, HttpStatus.NOT_FOUND)
+    }
+    if(currentUser.role !== Role.NURSE && re.addedBy.id !== currentUser.id){
+      throw new HttpException({message: 'you not have a permision'}, HttpStatus.UNAUTHORIZED)
+    }
+    re.isCanceled = removeScheduleDto.isCanceled
+    return await this.scheduleEntity.save(re);
   }
 }

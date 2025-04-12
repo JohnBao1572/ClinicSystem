@@ -1,6 +1,6 @@
 import { UserEntity } from "src/user/entities/user.entity";
 import { StatusSchedule } from "src/util/common/status";
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
 
 @Entity('examinationSchedules')
 export class ExaminationScheduleEntity {
@@ -24,7 +24,7 @@ export class ExaminationScheduleEntity {
 
     @Column({type: 'boolean', default: false})
     isCanceled: boolean;
-
+    
     @ManyToOne(() => UserEntity, (user)=> user.schedules)
     addedBy: UserEntity
 }
