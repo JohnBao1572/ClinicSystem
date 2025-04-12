@@ -1,6 +1,7 @@
+import { ExformEntity } from "src/exform/entities/exform.entity";
 import { SupplierEntity } from "src/suppliers/entities/supplier.entity";
 import { UserEntity } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('medicines')
 export class MedicineEntity {
@@ -27,4 +28,7 @@ export class MedicineEntity {
 
     @ManyToOne(() => SupplierEntity, (sup)=> sup.medicine)
     sup: SupplierEntity
+
+    @OneToMany(() => ExformEntity, (exForm)=> exForm.med)
+    exForm: ExformEntity
 }
