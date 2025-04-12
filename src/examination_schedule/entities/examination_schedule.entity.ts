@@ -1,3 +1,4 @@
+import { ExformEntity } from "src/exform/entities/exform.entity";
 import { UserEntity } from "src/user/entities/user.entity";
 import { StatusSchedule } from "src/util/common/status";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
@@ -24,7 +25,13 @@ export class ExaminationScheduleEntity {
 
     @Column({type: 'boolean', default: false})
     isCanceled: boolean;
+
+    @CreateDateColumn()
+    createdAt: Date;
     
     @ManyToOne(() => UserEntity, (user)=> user.schedules)
     addedBy: UserEntity
+
+    @ManyToOne(() => ExformEntity, (exForm)=> exForm.examSchedule)
+    exForm: ExformEntity[]
 }

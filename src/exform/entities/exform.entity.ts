@@ -1,6 +1,8 @@
 import { MedicineEntity } from "src/medicines/entities/medicine.entity";
 import { UserEntity } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { ExFormMedicinesEntity } from "./exformmed.entity";
+import { ExaminationScheduleEntity } from "src/examination_schedule/entities/examination_schedule.entity";
 
 
 @Entity('exForms')
@@ -9,13 +11,15 @@ export class ExformEntity {
     id: number;
 
     // chuẩn đoán ban đầu
-    @Column({type: 'varchar', length: 255})
+    @Column({ type: 'varchar', length: 255 })
     diagnosis: string;
 
-    // Đơn thuốc
-    @ManyToOne(() => MedicineEntity, (med)=> med.exForm)
-    med: MedicineEntity[]
+    @OneToMany(() => ExFormMedicinesEntity, (exFormMed)=> exFormMed.exForm, {cascade: true})
+    exFormMed: ExFormMedicinesEntity[]
 
-    @ManyToOne(() => UserEntity, (user)=> user.exForm)
+    @ManyToOne(() => UserEntity, (user) => user.exForm)
     addedBy: UserEntity
+
+    @ManyToOne(() => ExaminationScheduleEntity, (examSchedule)=> examSchedule.exForm)
+    examSchedule: ExaminationScheduleEntity
 }

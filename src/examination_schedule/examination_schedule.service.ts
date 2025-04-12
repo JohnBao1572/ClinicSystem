@@ -71,7 +71,7 @@ export class ExaminationScheduleService {
     }
     const schedulesToUpdateStatus: ExaminationScheduleEntity[] = [];
     for (const schedule of getAll) {
-      const createdTime = new Date(schedule.AppointmentDate).getTime();
+      const createdTime = new Date(schedule.createdAt).getTime();
       const diffTime = Date.now() - createdTime;
       // 1 giây = 1000 ms
       // 1 phút = 60 giây → 1000 * 60 ms = 1 phút
