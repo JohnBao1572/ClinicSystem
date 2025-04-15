@@ -48,11 +48,19 @@ export class ServicesService {
     return getOne;
   }
 
-  update(id: number, updateServiceDto: UpdateServiceDto) {
-    return `This action updates a #${id} service`;
+  async update(id: number, updateServiceDto: UpdateServiceDto) {
+    const up = await this.serviceEntity.findOne({
+      where: {id:id},
+      relations: {addedBy: true}
+    })
+    if(!up){
+      throw new HttpException({message: 'Not found'}, HttpStatus.NOT_FOUND)
+    }
+    Object.assign(up, updateServiceDto)
+    return await this.serviceEntity.save(up);
   }
 
-  remove(id: number) {
+  async remove(id: number) {
     return `This action removes a #${id} service`;
   }
 }

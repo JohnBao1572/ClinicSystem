@@ -35,6 +35,8 @@ export class ServicesController {
     return this.servicesService.findOne(+id, currentUser);
   }
 
+  @AuthorizeRoles(Role.ADMIN)
+  @UseGuards(AuthenticationGuard, AuthorizeGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
     return this.servicesService.update(+id, updateServiceDto);
