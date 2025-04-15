@@ -8,6 +8,7 @@ import { AuthenticationGuard } from 'src/util/guards/authentication.guard';
 import { AuthorizeGuard } from 'src/util/guards/authorization.guard';
 import { CurrentUser } from 'src/util/decorators/current-user.decorator';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { ExformEntity } from './entities/exform.entity';
 
 @Controller('exform')
 export class ExformController {
@@ -20,14 +21,18 @@ export class ExformController {
     return this.exformService.create(createExformDto, currentUser);
   }
 
-  @Get()
-  findAll() {
-    return this.exformService.findAll();
+  @AuthorizeRoles(Role.DOCTOR, Role.NURSE, Role.USER)
+  @UseGuards(AuthenticationGuard, AuthorizeGuard)
+  @Get('getAll')
+  async findAll(@CurrentUser() currentUser:UserEntity):Promise<ExformEntity[]> {
+    return await this.exformService.findAll(currentUser);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.exformService.findOne(+id);
+  @AuthorizeRoles(Role.DOCTOR, Role.NURSE, Role.USER)
+  @UseGuards(AuthenticationGuard, AuthorizeGuard)
+  @Get('get/:id')
+  async findOne(@Param('id') id: string, @CurrentUser() currentUser:UserEntity):Promise<ExformEntity> {
+    return await this.exformService.findOne(+id, currentUser);
   }
 
   @Patch(':id')

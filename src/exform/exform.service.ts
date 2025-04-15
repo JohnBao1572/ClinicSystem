@@ -8,6 +8,7 @@ import { ExFormMedicinesEntity } from './entities/exformmed.entity';
 import { ExaminationScheduleService } from 'src/examination_schedule/examination_schedule.service';
 import { MedicinesService } from 'src/medicines/medicines.service';
 import { UserEntity } from 'src/user/entities/user.entity';
+import { Role } from 'src/util/common/user-role';
 
 @Injectable()
 export class ExformService {
@@ -23,7 +24,7 @@ export class ExformService {
       throw new HttpException({ message: 'NOt found this id schedule' }, HttpStatus.NOT_FOUND)
     }
 
-    
+
     for (const medicine of createExformDto.medicineList) {
       const med = await this.medicinesService.findOne(medicine.medId)
       if (!med) {
@@ -37,7 +38,7 @@ export class ExformService {
     })
     const saveExForm = await this.exEntity.save(newExForm)
 
-    for(const medicine of createExformDto.medicineList){
+    for (const medicine of createExformDto.medicineList) {
       const med = await this.medicinesService.findOne(medicine.medId)
       const exFormMed = await this.exMedEntity.create({
         exForm: saveExForm,
@@ -51,17 +52,49 @@ export class ExformService {
       await this.medicinesService.update(med.id, med)
     }
     return await this.exEntity.findOne({
-      where: {id: saveExForm.id},
-      relations: {addedBy: true, examSchedule: true, exFormMed: true}
+      where: { id: saveExForm.id },
+      relations: { addedBy: true, examSchedule: { addedBy: true }, exFormMed: true }
     });
   }
 
-  findAll() {
-    return `This action returns all exform`;
+  async findAll(currentUser: UserEntity): Promise<ExformEntity[]> {
+    let whereCondition: any = {};
+    if (currentUser.role === Role.USER) {
+      whereCondition = {
+        examSchedule: {
+          addedBy: { id: currentUser.id }
+        }
+      };
+    }
+
+    const getAll = await this.exEntity.find({
+      where: whereCondition,
+      relations: {addedBy: true, examSchedule: {addedBy: true}, exFormMed: true},
+    })
+    if (!getAll || getAll.length === 0) {
+      throw new HttpException({ message: 'Not found this id exam form' }, HttpStatus.NOT_FOUND)
+    }
+    return getAll;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} exform`;
+  async findOne(id: number, currentUser:UserEntity):Promise<ExformEntity> {
+    let where: any = {id: id}
+    if (currentUser.role === Role.USER) {
+      where = {
+        id:id,
+        examSchedule: {
+          addedBy: { id: currentUser.id }
+        }
+      };
+    }
+    const getONe = await this.exEntity.findOne({
+      where: where,
+      relations: {addedBy: true, examSchedule: {addedBy: true}, exFormMed: true}
+    })
+    if(!getONe){
+      throw new HttpException({message: 'You can not see details'}, HttpStatus.BAD_REQUEST)
+    }
+    return getONe;
   }
 
   update(id: number, updateExformDto: UpdateExformDto) {
