@@ -21,6 +21,9 @@ export class MedicineEntity {
     @Column({ type: 'boolean', default: false })
     isDeleted: boolean;
 
+    @Column({type: 'decimal', precision: 10, scale: 2})
+    price: number;
+
     @CreateDateColumn()
     createdAt: Timestamp;
 

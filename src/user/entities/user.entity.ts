@@ -3,6 +3,7 @@ import { ExformEntity } from "src/exform/entities/exform.entity";
 import { InformationEntity } from "src/informations/entities/information.entity";
 import { MedicineEntity } from "src/medicines/entities/medicine.entity";
 import { PositionEntity } from "src/positions/entities/position.entity";
+import { ServiceEntity } from "src/services/entities/service.entity";
 import { SupplierEntity } from "src/suppliers/entities/supplier.entity";
 import { Role } from "src/util/common/user-role";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
@@ -62,4 +63,7 @@ export class UserEntity {
 
     @OneToMany(() => ExformEntity, (exForm)=> exForm.addedBy)
     exForm: ExformEntity[]
+
+    @OneToMany(() => ServiceEntity, (ser)=> ser.addedBy)
+    ser: ServiceEntity[]
 }

@@ -17,24 +17,43 @@ export class ExformService {
     private readonly medicinesService: MedicinesService
   ) { }
 
-  async create(createExformDto: CreateExformDto, currentUser:UserEntity) {
+  async create(createExformDto: CreateExformDto, currentUser: UserEntity) {
     const schedule = await this.examinationScheduleService.findOne(createExformDto.examScheduleId, currentUser)
-    if(!schedule){
-      throw new HttpException({message: 'NOt found this id schedule'}, HttpStatus.NOT_FOUND)
+    if (!schedule) {
+      throw new HttpException({ message: 'NOt found this id schedule' }, HttpStatus.NOT_FOUND)
     }
+
     
-    for(const medicine of createExformDto.medicineList){
+    for (const medicine of createExformDto.medicineList) {
       const med = await this.medicinesService.findOne(medicine.medId)
-      if(!med){
-        throw new HttpException({message: 'Not found this infor med'}, HttpStatus.NOT_FOUND)
+      if (!med) {
+        throw new HttpException({ message: 'Not found this infor med' }, HttpStatus.NOT_FOUND)
       }
     }
-    const newExForm = await this.exEntity.create(createExformDto)
-    createExformDto.examScheduleId = schedule
-    createExformDto.medicineList = medicine
-    createExformDto.
+    const newExForm = await this.exEntity.create({
+      ...createExformDto,
+      examSchedule: schedule,
+      addedBy: currentUser
+    })
+    const saveExForm = await this.exEntity.save(newExForm)
 
-    return 'This action adds a new exform';
+    for(const medicine of createExformDto.medicineList){
+      const med = await this.medicinesService.findOne(medicine.medId)
+      const exFormMed = await this.exMedEntity.create({
+        exForm: saveExForm,
+        med,
+        count: medicine.count
+      })
+      await this.exMedEntity.save(exFormMed)
+      let qty = med.quantity
+      qty -= medicine.count
+      med.quantity = qty
+      await this.medicinesService.update(med.id, med)
+    }
+    return await this.exEntity.findOne({
+      where: {id: saveExForm.id},
+      relations: {addedBy: true, examSchedule: true, exFormMed: true}
+    });
   }
 
   findAll() {

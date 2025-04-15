@@ -1,4 +1,5 @@
 import { ExformEntity } from "src/exform/entities/exform.entity";
+import { ServiceEntity } from "src/services/entities/service.entity";
 import { UserEntity } from "src/user/entities/user.entity";
 import { StatusSchedule } from "src/util/common/status";
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Timestamp, UpdateDateColumn } from "typeorm";
@@ -31,6 +32,9 @@ export class ExaminationScheduleEntity {
     
     @ManyToOne(() => UserEntity, (user)=> user.schedules)
     addedBy: UserEntity
+
+    @ManyToOne(() => ServiceEntity, (ser)=> ser.schedule)
+    ser: ServiceEntity
 
     @ManyToOne(() => ExformEntity, (exForm)=> exForm.examSchedule)
     exForm: ExformEntity[]

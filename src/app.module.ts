@@ -11,11 +11,12 @@ import { MedicinesModule } from './medicines/medicines.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ExaminationScheduleModule } from './examination_schedule/examination_schedule.module';
 import { ExformModule } from './exform/exform.module';
+import { ServicesModule } from './services/services.module';
 
 
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule, MedicinesModule, SuppliersModule, ExaminationScheduleModule, ExformModule],
+  imports: [TypeOrmModule.forRoot(dataSourceOptions), UserModule, PositionsModule, InformationsModule, MedicinesModule, SuppliersModule, ExaminationScheduleModule, ExformModule, ServicesModule],
   controllers: [AppController],
   providers: [AppService],
 })

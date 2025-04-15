@@ -9,12 +9,19 @@ import { handleSendMail } from 'src/util/handleSendmail';
 import { Role } from 'src/util/common/user-role';
 import { StatusSchedule } from 'src/util/common/status';
 import { scan } from 'rxjs';
+import { ServicesService } from 'src/services/services.service';
 
 @Injectable()
 export class ExaminationScheduleService {
-  constructor(@InjectRepository(ExaminationScheduleEntity) private readonly scheduleEntity: Repository<ExaminationScheduleEntity>) { }
+  constructor(@InjectRepository(ExaminationScheduleEntity) private readonly scheduleEntity: Repository<ExaminationScheduleEntity>,
+  private readonly servicesService: ServicesService
+) { }
 
   async create(createScheduleDto: CreateExaminationScheduleDto, currentUser: UserEntity) {
+    const getOne = await this.servicesService.findOne(createScheduleDto.serId, currentUser)
+    if(!getOne){
+      throw new HttpException({message: 'Not found this id ser'}, HttpStatus.NOT_FOUND)
+    }
     const proposedDate = new Date(createScheduleDto.AppointmentDate);
     while (true) {
       const isConflict = await this.scheduleEntity.findOne({
@@ -28,6 +35,7 @@ export class ExaminationScheduleService {
 
     const newSchedule = await this.scheduleEntity.create(createScheduleDto);
     newSchedule.AppointmentDate = proposedDate;
+    newSchedule.ser = getOne
     newSchedule.addedBy = currentUser;
 
     const timeString = new Intl.DateTimeFormat('vi-VN', {
@@ -64,7 +72,7 @@ export class ExaminationScheduleService {
   async findAll(currentUser: UserEntity): Promise<ExaminationScheduleEntity[]> {
     const getAll = await this.scheduleEntity.find({
       where: currentUser.role === Role.NURSE ? {} : {addedBy: {id: currentUser.id}},
-      relations: { addedBy: true },
+      relations: { addedBy: true, ser: true },
     })
     if (!getAll || getAll.length === 0) {
       throw new HttpException({ message: 'No exam schedules found' }, HttpStatus.NOT_FOUND)
@@ -90,12 +98,12 @@ export class ExaminationScheduleService {
   async findOne(id: number, currentUser:UserEntity):Promise<ExaminationScheduleEntity> {
     const getOne = await this.scheduleEntity.findOne({
       where: {id: id},
-      relations: {addedBy: true}
+      relations: {addedBy: true, ser: true}
     })
     if(!getOne){
       throw new HttpException({message: 'NOt found this id to watch detail'}, HttpStatus.NOT_FOUND)
     }
-    if(currentUser.role !== Role.NURSE && getOne.addedBy.id !== currentUser.id){
+    if(currentUser.role !== Role.NURSE && getOne.addedBy.id !== currentUser.id && currentUser.role !== Role.DOCTOR){
       throw new HttpException({message: 'You no have permission'}, HttpStatus.BAD_REQUEST)
     }
     return getOne;
