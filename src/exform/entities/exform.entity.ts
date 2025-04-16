@@ -3,6 +3,7 @@ import { UserEntity } from "src/user/entities/user.entity";
 import { Column, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ExFormMedicinesEntity } from "./exformmed.entity";
 import { ExaminationScheduleEntity } from "src/examination_schedule/entities/examination_schedule.entity";
+import { PaymentEntity } from "src/payments/entities/payment.entity";
 
 
 @Entity('exForms')
@@ -22,4 +23,7 @@ export class ExformEntity {
 
     @ManyToOne(() => ExaminationScheduleEntity, (examSchedule)=> examSchedule.exForm)
     examSchedule: ExaminationScheduleEntity
+
+    @OneToMany(()=> PaymentEntity, (pay)=>pay.ex)
+    pay: PaymentEntity[]
 }

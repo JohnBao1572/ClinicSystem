@@ -31,15 +31,15 @@ export class ServicesController {
   @AuthorizeRoles(Role.ADMIN)
   @UseGuards(AuthenticationGuard, AuthorizeGuard)
   @Get('get/:id')
-  async findOne(@Param('id') id: string, @CurrentUser() currentUser:UserEntity) {
-    return this.servicesService.findOne(+id, currentUser);
+  async findOne(@Param('id') id: string, @CurrentUser() currentUser:UserEntity):Promise<ServiceEntity> {
+    return await this.servicesService.findOne(+id, currentUser);
   }
 
   @AuthorizeRoles(Role.ADMIN)
   @UseGuards(AuthenticationGuard, AuthorizeGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto) {
-    return this.servicesService.update(+id, updateServiceDto);
+  async update(@Param('id') id: string, @Body() updateServiceDto: UpdateServiceDto):Promise<ServiceEntity> {
+    return await this.servicesService.update(+id, updateServiceDto);
   }
 
   @Delete(':id')

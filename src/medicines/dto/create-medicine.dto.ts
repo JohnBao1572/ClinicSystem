@@ -14,6 +14,10 @@ export class CreateMedicineDto {
     @IsNumber({}, {message: 'qty must a num'})
     quantity: number;
 
+    @IsNotEmpty({message: 'qty not emp'})
+    @IsNumber({}, {message: 'qty must a num'})
+    price: number;
+
     @IsNotEmpty({message: 'supId not emp'})
     @IsNumber({}, {message: 'supId must a number'})
     supId: number;

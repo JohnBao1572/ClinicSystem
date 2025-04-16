@@ -2,7 +2,9 @@ import { ExaminationScheduleEntity } from "src/examination_schedule/entities/exa
 import { ExformEntity } from "src/exform/entities/exform.entity";
 import { InformationEntity } from "src/informations/entities/information.entity";
 import { MedicineEntity } from "src/medicines/entities/medicine.entity";
+import { PaymentEntity } from "src/payments/entities/payment.entity";
 import { PositionEntity } from "src/positions/entities/position.entity";
+import { ReportEntity } from "src/reports/entities/report.entity";
 import { ServiceEntity } from "src/services/entities/service.entity";
 import { SupplierEntity } from "src/suppliers/entities/supplier.entity";
 import { Role } from "src/util/common/user-role";
@@ -66,4 +68,10 @@ export class UserEntity {
 
     @OneToMany(() => ServiceEntity, (ser)=> ser.addedBy)
     ser: ServiceEntity[]
+
+    @OneToMany(()=> PaymentEntity, (pay)=> pay.addedBy)
+    pay: PaymentEntity[]
+
+    @OneToMany(()=> ReportEntity,(report)=> report.addedBy)
+    report: ReportEntity[]
 }

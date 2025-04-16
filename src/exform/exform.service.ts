@@ -89,7 +89,7 @@ export class ExformService {
     }
     const getONe = await this.exEntity.findOne({
       where: where,
-      relations: {addedBy: true, examSchedule: {addedBy: true}, exFormMed: true}
+      relations: {addedBy: true, examSchedule: {ser: true, addedBy: true}, exFormMed: true}
     })
     if(!getONe){
       throw new HttpException({message: 'You can not see details'}, HttpStatus.BAD_REQUEST)
