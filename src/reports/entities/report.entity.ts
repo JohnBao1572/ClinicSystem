@@ -10,10 +10,10 @@ export class ReportEntity {
     @Column({ type: 'varchar', length: 50, nullable: true })
     date: string;
 
-    @Column({type: 'varchar', length: 50, nullable: true })
+    @Column({ type: 'varchar', length: 50, nullable: true })
     month: string;
 
-    @Column({type: 'varchar', length: 50, nullable: true })
+    @Column({ type: 'varchar', length: 50, nullable: true })
     year: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 3 })
@@ -22,9 +22,9 @@ export class ReportEntity {
     @Column({ type: 'decimal', precision: 10, scale: 3 })
     profit: number;
 
-    @ManyToOne(()=> UserEntity, (user)=> user.report)
-    addedBy:UserEntity
+    @ManyToOne(() => UserEntity, (user) => user.report)
+    addedBy: UserEntity
 
-    @OneToMany(()=> PaymentEntity,(pay)=> pay.report)
+    @OneToMany(() => PaymentEntity, (pay) => pay.report)
     pay: PaymentEntity[]
 }
